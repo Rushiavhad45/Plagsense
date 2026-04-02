@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Details - AI Plagiarism Analyzer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'analyzer:dashboard' %}" class="text-decoration-none">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Report Details</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">Plagiarism Report</h1>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-calendar"></i> {{ report.created_at|date:"F d, Y" }} at {{ report.created_at|time:"H:i" }}
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'analyzer:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h2 class="text-{% if report.similarity_score > 70 %}danger{% elif report.similarity_score > 40 %}warning{% else %}success{% endif %} mb-1">
+                        {{ report.similarity_score|floatformat:1 }}%
+                    </h2>
+                    <p class="text-muted mb-0">Similarity Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-{% if report.risk_level == 'High' %}danger{% elif report.risk_level == 'Medium' %}warning{% else %}success{% endif %} mb-1">
+                        {{ report.risk_level }}
+                    </h4>
+                    <p class="text-muted mb-0">Risk Level</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-primary mb-1">{{ report.flagged_sentences_count }}</h4>
+                    <p class="text-muted mb-0">Flagged Sentences</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-info mb-1">
+                        {% if report.file %}
+                            <i class="bi bi-file-earmark-text"></i>
+                        {% else %}
+                            <i class="bi bi-textarea-t"></i>
+                        {% endif %}
+                    </h4>
+                    <p class="text-muted mb-0">
+                        {% if report.file %}File Upload{% else %}Text Input{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Original Content -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-text"></i> Original Content
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if report.file %}
+                        <div class="mb-3">
+                            <strong>File:</strong> 
+                            <span class="badge bg-secondary">{{ report.file.name }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="border rounded p-3 bg-light">
+                        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ report.original_text }}</pre>
+                    </div>
+                    
+                    <div class="mt-2 text-muted">
+                        <small>
+                            <i class="bi bi-info-circle"></i> 
+                            {{ report.original_text|length }} characters
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flagged Sentences -->
+    {% if report.flagged_sentences %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle text-warning"></i> 
+                        Flagged Sentences ({{ report.flagged_sentences_count }})
+                    </h5>
+                    <span class="badge bg-warning">Requires Review</span>
+                </div>
+                <div class="card-body">
+                    {% for item in report.flagged_sentences %}
+                    <div class="card mb-3 border-warning">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="text-warning mb-2">
+                                        <i class="bi bi-quote"></i> Flagged Sentence #{{ forloop.counter }}
+                                    </h6>
+                                    <blockquote class="blockquote">
+                                        <p class="mb-2">"{{ item.sentence }}"</p>
+                                    </blockquote>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="bi bi-link-45deg"></i> Similar Source
+                                    </h6>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-globe text-primary me-2"></i>
+                                        <a href="{{ item.source_url }}" 
+                                           target="_blank" 
+                                           class="text-decoration-none text-truncate">
+                                            {{ item.source_url|truncatechars:40 }}
+                                        </a>
+                                        <i class="bi bi-box-arrow-up-right ms-1 text-muted"></i>
+                                    </div>
+                                    <div class="mt-2">
+                                        <span class="badge bg-danger">
+                                            {{ item.similarity|floatformat:1 }}% similar
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                    <h5 class="text-success mt-3">No Plagiarism Detected</h5>
+                    <p class="text-muted mb-0">
+                        Great! No sentences were flagged as potentially plagiarized content.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Analysis Details -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-gear"></i> Analysis Details
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Analysis Method:</dt>
+                        <dd class="col-sm-7">TF-IDF + Cosine Similarity</dd>
+                        
+                        <dt class="col-sm-5">Sources Checked:</dt>
+                        <dd class="col-sm-7">5 web sources</dd>
+                        
+                        <dt class="col-sm-5">Processing Time:</dt>
+                        <dd class="col-sm-7">< 1 second</dd>
+                        
+                        <dt class="col-sm-5">Report ID:</dt>
+                        <dd class="col-sm-7">#{{ report.id }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Interpretation Guide
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="badge bg-success">0-30%</span>
+                            <small class="text-muted">Low Risk</small>
+                        </div>
+                        <small>Minimal similarity detected. Content appears original.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="badge bg-warning">31-70%</span>
+                            <small class="text-muted">Medium Risk</small>
+                        </div>
+                        <small>Moderate similarity. Review flagged sections.</small>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="badge bg-danger">71-100%</span>
+                            <small class="text-muted">High Risk</small>
+                        </div>
+                        <small>High similarity detected. Requires immediate attention.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="mb-3">
+                        <i class="bi bi-tools"></i> Actions
+                    </h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'analyzer:dashboard' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> New Analysis
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print Report
+                        </button>
+                        <button class="btn btn-outline-info" onclick="shareReport()">
+                            <i class="bi bi-share"></i> Share
+                        </button>
+                        <button class="btn btn-outline-success" onclick="exportReport()">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for additional functionality -->
+<script>
+function shareReport() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Plagiarism Analysis Report',
+            text: 'Check out this plagiarism analysis report',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy URL to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Report URL copied to clipboard!');
+        });
+    }
+}
+
+function exportReport() {
+    // Simple export functionality - could be enhanced
+    const reportData = {
+        id: parseInt('{{ report.id }}'),
+        similarity_score: parseFloat('{{ report.similarity_score }}'),
+        risk_level: '{{ report.risk_level }}',
+        created_at: '{{ report.created_at|date:"c" }}',
+        flagged_sentences_count: parseInt('{{ report.flagged_sentences_count }}'),
+        original_text: '{{ report.original_text|escapejs }}'
+    };
+    
+    const dataStr = JSON.stringify(reportData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'plagiarism_report_' + '{{ report.id }}' + '.json';
+    link.click();
+    
+    URL.revokeObjectURL(url);
+}
+
+// Print styles
+const printStyles = `
+    @media print {
+        .btn, .breadcrumb, nav { display: none !important; }
+        .card { border: 1px solid #dee2e6 !important; box-shadow: none !important; }
+        .card-header { background-color: #f8f9fa !important; }
+    }
+`;
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = printStyles;
+document.head.appendChild(styleSheet);
+</script>
+{% endblock %}

@@ -1,0 +1,802 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - AI Plagiarism Analyzer{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    }
+    
+    .dashboard-header {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(50%, -50%);
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: none;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .analysis-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: none;
+        overflow: hidden;
+    }
+    
+    .analysis-card .card-header {
+        background: var(--primary-gradient);
+        border: none;
+        padding: 1.5rem;
+    }
+    
+    .modern-btn {
+        border-radius: 50px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    
+    .modern-btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .modern-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .modern-btn-outline {
+        border: 2px solid #667eea;
+        color: #667eea;
+        background: transparent;
+    }
+    
+    .modern-btn-outline:hover {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+    }
+    
+    .form-control {
+        border-radius: 15px;
+        border: 2px solid #e9ecef;
+        padding: 12px 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-check:checked + .btn-outline-primary {
+        background: var(--primary-gradient);
+        border-color: transparent;
+    }
+    
+    .reports-table {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .table th {
+        background: #f8f9fa;
+        border: none;
+        font-weight: 600;
+        color: #495057;
+        padding: 1rem;
+    }
+    
+    .table td {
+        border: none;
+        padding: 1rem;
+        vertical-align: middle;
+    }
+    
+    .badge {
+        border-radius: 50px;
+        padding: 8px 16px;
+        font-weight: 600;
+    }
+    
+    .tips-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 20px;
+        border: none;
+    }
+    
+    .tips-card .card-header {
+        background: transparent;
+        border: none;
+    }
+    
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+    
+    .reports-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: none;
+        overflow: hidden;
+    }
+    
+    .modern-table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .modern-table thead th {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: none;
+        font-weight: 600;
+        color: #495057;
+        padding: 1.2rem 1rem;
+        position: relative;
+    }
+    
+    .modern-table tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    .modern-table tbody tr:hover {
+        background: rgba(102, 126, 234, 0.05);
+        transform: translateX(5px);
+    }
+    
+    .report-row {
+        border-left: 4px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .report-row:hover {
+        border-left-color: #667eea;
+        background: rgba(102, 126, 234, 0.02);
+    }
+    
+    .report-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-gradient);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+    
+    .score-indicator {
+         width: 8px;
+         height: 8px;
+         border-radius: 50%;
+         display: inline-block;
+     }
+     
+     .empty-state {
+         text-align: center;
+         padding: 4rem 2rem;
+         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+     }
+     
+     .empty-state-icon {
+         width: 80px;
+         height: 80px;
+         background: var(--primary-gradient);
+         border-radius: 50%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         margin: 0 auto 1.5rem;
+         color: white;
+         font-size: 2rem;
+     }
+     
+     .empty-state-title {
+         color: #495057;
+         margin-bottom: 0.5rem;
+     }
+     
+     .empty-state-text {
+         color: #6c757d;
+         margin-bottom: 1.5rem;
+     }
+     
+     .tips-card {
+         background: white;
+         border-radius: 20px;
+         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+         border: none;
+         overflow: hidden;
+     }
+     
+     .tips-card .card-header {
+         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         color: white;
+         border: none;
+         padding: 1.2rem 1.5rem;
+     }
+     
+     .tips-card .card-body {
+         padding: 1.5rem;
+     }
+     
+     .tips-card .bi-check-circle {
+         color: #28a745;
+         font-size: 1.1rem;
+     }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="dashboard-header" data-aos="fade-down">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-6 fw-bold mb-2">
+                    Welcome back, {{ user.first_name|default:user.username }}! 👋
+                </h1>
+                <p class="lead mb-0 opacity-90">
+                    Ready to analyze your content for plagiarism? Let's ensure your work is 100% original.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="d-inline-block">
+                    <small class="opacity-75">
+                        <i class="bi bi-clock me-1"></i>
+                        Last login: {{ user.last_login|date:"M d, Y H:i" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stats-card text-center">
+                <div class="stats-number">{{ reports.count }}</div>
+                <h6 class="text-muted mb-0">Total Reports</h6>
+                <small class="text-muted">
+                    <i class="bi bi-file-earmark-text me-1"></i>Documents analyzed
+                </small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stats-card text-center">
+                <div class="stats-number">
+                    {% if reports %}
+                        {{ reports.first.similarity_score|floatformat:0 }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                <h6 class="text-muted mb-0">Last Score</h6>
+                <small class="text-muted">
+                    <i class="bi bi-graph-up me-1"></i>Recent analysis
+                </small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stats-card text-center">
+                <div class="stats-number">99.9%</div>
+                <h6 class="text-muted mb-0">Accuracy</h6>
+                <small class="text-muted">
+                    <i class="bi bi-shield-check me-1"></i>AI precision
+                </small>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="stats-card text-center">
+                <div class="stats-number">24/7</div>
+                <h6 class="text-muted mb-0">Support</h6>
+                <small class="text-muted">
+                    <i class="bi bi-headset me-1"></i>Always available
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Section -->
+    <div class="row mb-5">
+        <div class="col-lg-8" data-aos="fade-right">
+            <div class="analysis-card">
+                <div class="card-header text-white">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-search me-2"></i>AI Plagiarism Analysis
+                    </h5>
+                    <small class="opacity-75">Upload or paste your content for instant analysis</small>
+                </div>
+                <div class="card-body p-4">
+                    <form id="analysisForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Input Method Selection -->
+                        <div class="mb-4">
+                            <div class="btn-group w-100" role="group" aria-label="Input method">
+                                <input type="radio" class="btn-check" name="inputMethod" id="textInput" value="text" checked>
+                                <label class="btn btn-outline-primary modern-btn-outline" for="textInput">
+                                    <i class="bi bi-textarea-t me-2"></i>Text Input
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="inputMethod" id="fileInput" value="file">
+                                <label class="btn btn-outline-primary modern-btn-outline" for="fileInput">
+                                    <i class="bi bi-file-earmark-text me-2"></i>File Upload
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Text Input Section -->
+                        <div id="textSection">
+                            <div class="mb-4">
+                                <label for="textContent" class="form-label fw-semibold">
+                                    <i class="bi bi-pencil-square me-2"></i>Enter your text to analyze
+                                </label>
+                                <textarea class="form-control" 
+                                          id="textContent" 
+                                          name="text" 
+                                          rows="10" 
+                                          placeholder="Paste your content here for plagiarism analysis..."></textarea>
+                                <div class="form-text d-flex justify-content-between">
+                                    <span><span id="charCount">0</span> characters</span>
+                                    <span class="text-muted">Minimum 50 characters recommended</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- File Upload Section -->
+                        <div id="fileSection" style="display: none;">
+                            <div class="mb-4">
+                                <label for="fileUpload" class="form-label fw-semibold">
+                                    <i class="bi bi-cloud-upload me-2"></i>Upload a document
+                                </label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="fileUpload" 
+                                       name="file" 
+                                       accept=".txt,.docx,.pdf">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Supported formats: .txt, .docx, .pdf (Max size: 5MB)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn modern-btn modern-btn-primary btn-lg" id="analyzeBtn">
+                                <i class="bi bi-search me-2"></i>Analyze for Plagiarism
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Loading State -->
+                    <div id="loadingState" class="text-center py-5" style="display: none;">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h6 class="text-primary">Analyzing content...</h6>
+                        <p class="text-muted mb-0">Our AI is scanning millions of sources</p>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div id="resultsSection" style="display: none;">
+                        <hr class="my-4">
+                        <h6 class="mb-3 fw-bold">
+                            <i class="bi bi-clipboard-check me-2"></i>Analysis Results
+                        </h6>
+                        <div id="resultsContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4" data-aos="fade-left">
+            <!-- AI Features Card -->
+            <div class="stats-card mb-4" style="height: 300px;">
+                <div class="text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-robot" style="font-size: 3rem; color: #667eea;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: black; margin-bottom: 30px;">AI-Powered Detection</h5>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="mb-2">
+                                <i class="bi bi-lightning-charge text-warning" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <small class="text-muted">Instant</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="mb-2">
+                                <i class="bi bi-shield-check text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <small class="text-muted">Accurate</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="mb-2">
+                                <i class="bi bi-globe text-info" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <small class="text-muted">Global</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="tips-card">
+                <div class="card-header">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-lightbulb me-2"></i>Pro Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-3" style="color: black;">
+                        <i class="bi bi-check-circle me-3 mt-1"></i>
+                        <div>
+                            <small class="fw-semibold">Check Multiple Sources</small>
+                            <div class="small opacity-75">Cross-reference results for better accuracy</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start mb-3" style="color: black;">
+                        <i class="bi bi-check-circle me-3 mt-1"></i>
+                        <div>
+                            <small class="fw-semibold">Review Flagged Content</small>
+                            <div class="small opacity-75">Examine highlighted sentences carefully</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start" style="color: black;">
+                        <i class="bi bi-check-circle me-3 mt-1"></i>
+                        <div>
+                            <small class="fw-semibold">Proper Citations</small>
+                            <div class="small opacity-75">Always cite your sources correctly</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="row mt-5">
+        <div class="col-12" data-aos="fade-up">
+            <div class="analysis-card">
+                <div class="card-header text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-clock-history me-2"></i>Recent Reports
+                        </h5>
+                        <small class="opacity-75">Your analysis history</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-white text-primary rounded-pill px-3">{{ reports.count }} Total</span>
+                        {% if reports %}
+                            <small class="opacity-75">Last: {{ reports.first.created_at|date:"M d, Y" }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if reports %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="border-0 fw-semibold px-4 py-3">Date & Time</th>
+                                        <th class="border-0 fw-semibold px-4 py-3">Content Preview</th>
+                                        <th class="border-0 fw-semibold px-4 py-3">Similarity Score</th>
+                                        <th class="border-0 fw-semibold px-4 py-3">Risk Level</th>
+                                        <th class="border-0 fw-semibold px-4 py-3 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for report in reports %}
+                                    <tr class="border-bottom">
+                                        <td class="px-4 py-3">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-semibold">{{ report.created_at|date:"M d, Y" }}</span>
+                                                <small class="text-muted">{{ report.created_at|time:"g:i A" }}</small>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="d-flex align-items-start">
+                                                <div class="me-3">
+                                                    {% if report.file %}
+                                                        <i class="bi bi-file-earmark-text text-primary" style="font-size: 1.2rem;"></i>
+                                                    {% else %}
+                                                        <i class="bi bi-file-text text-primary" style="font-size: 1.2rem;"></i>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold text-truncate" style="max-width: 300px;">
+                                                        {% if report.file %}
+                                                            {{ report.file.name }}
+                                                        {% else %}
+                                                            {{ report.original_text|truncatechars:50 }}
+                                                        {% endif %}
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        {% if report.file %}
+                                                            File upload
+                                                        {% else %}
+                                                            {{ report.original_text|length }} characters
+                                                        {% endif %}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                {% if report.similarity_score > 70 %}
+                                                    <div class="bg-danger rounded-circle me-2" style="width: 8px; height: 8px;"></div>
+                                                    <span class="badge" style="background: var(--danger-gradient); color: white;">{{ report.similarity_score|floatformat:1 }}%</span>
+                                                {% elif report.similarity_score > 40 %}
+                                                    <div class="bg-warning rounded-circle me-2" style="width: 8px; height: 8px;"></div>
+                                                    <span class="badge" style="background: var(--warning-gradient); color: white;">{{ report.similarity_score|floatformat:1 }}%</span>
+                                                {% else %}
+                                                    <div class="bg-success rounded-circle me-2" style="width: 8px; height: 8px;"></div>
+                                                    <span class="badge" style="background: var(--success-gradient); color: white;">{{ report.similarity_score|floatformat:1 }}%</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            {% if report.similarity_score > 70 %}
+                                                <span class="badge" style="background: var(--danger-gradient); color: white;">High Risk</span>
+                                            {% elif report.similarity_score > 40 %}
+                                                <span class="badge" style="background: var(--warning-gradient); color: white;">Medium Risk</span>
+                                            {% else %}
+                                                <span class="badge" style="background: var(--success-gradient); color: white;">Low Risk</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'analyzer:report_detail' report.id %}" 
+                                                   class="btn btn-sm modern-btn-outline">
+                                                    <i class="bi bi-eye me-1"></i>View
+                                                </a>
+                                                <button class="btn btn-sm btn-outline-secondary" 
+                                                        onclick="shareReport({{ report.id }})"
+                                                        title="Share Report">
+                                                    <i class="bi bi-share"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Load More Button -->
+                        {% if reports.count > 5 %}
+                        <div class="card-footer bg-light text-center">
+                            <button class="btn modern-btn-outline btn-sm">
+                                <i class="bi bi-arrow-down me-1"></i>Load More Reports
+                            </button>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </div>
+                            <h6 class="fw-bold mb-2">No reports yet</h6>
+                            <p class="text-muted mb-3">Start by analyzing your first document above!</p>
+                            <button class="btn modern-btn modern-btn-primary" 
+                                    onclick="document.getElementById('textContent').focus()">
+                                <i class="bi bi-plus-circle me-2"></i>Create First Report
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Dashboard Functionality -->
+<script>
+// Share report function
+function shareReport(reportId) {
+    const url = window.location.origin + '/analyzer/report/' + reportId + '/';
+    if (navigator.share) {
+        navigator.share({
+            title: 'Plagiarism Analysis Report',
+            text: 'Check out this plagiarism analysis report',
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Report link copied to clipboard!');
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const textInput = document.getElementById('textInput');
+    const fileInput = document.getElementById('fileInput');
+    const textSection = document.getElementById('textSection');
+    const fileSection = document.getElementById('fileSection');
+    const textContent = document.getElementById('textContent');
+    const charCount = document.getElementById('charCount');
+    const analysisForm = document.getElementById('analysisForm');
+    const loadingState = document.getElementById('loadingState');
+    const resultsSection = document.getElementById('resultsSection');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+
+    // Toggle input methods
+    textInput.addEventListener('change', function() {
+        if (this.checked) {
+            textSection.style.display = 'block';
+            fileSection.style.display = 'none';
+            document.getElementById('fileUpload').value = '';
+        }
+    });
+
+    fileInput.addEventListener('change', function() {
+        if (this.checked) {
+            textSection.style.display = 'none';
+            fileSection.style.display = 'block';
+            textContent.value = '';
+            charCount.textContent = '0';
+        }
+    });
+
+    // Character counter
+    textContent.addEventListener('input', function() {
+        charCount.textContent = this.value.length;
+    });
+
+    // Form submission
+    analysisForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const isTextInput = textInput.checked;
+        
+        // Validation
+        if (isTextInput && !textContent.value.trim()) {
+            alert('Please enter some text to analyze.');
+            return;
+        }
+        
+        if (!isTextInput && !document.getElementById('fileUpload').files[0]) {
+            alert('Please select a file to upload.');
+            return;
+        }
+
+        // Show loading state
+        analyzeBtn.style.display = 'none';
+        loadingState.style.display = 'block';
+        resultsSection.style.display = 'none';
+
+        // Submit to API
+        fetch('{% url "analyzer:analyze_api" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingState.style.display = 'none';
+            analyzeBtn.style.display = 'block';
+            
+            if (data.success) {
+                displayResults(data);
+                // Refresh page to show new report in history
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                alert('Error: ' + (data.error || 'Analysis failed'));
+            }
+        })
+        .catch(error => {
+            loadingState.style.display = 'none';
+            analyzeBtn.style.display = 'block';
+            alert('Error: ' + error.message);
+        });
+    });
+
+    function displayResults(data) {
+        const resultsContent = document.getElementById('resultsContent');
+        const riskLevel = data.similarity_score > 70 ? 'High' : data.similarity_score > 40 ? 'Medium' : 'Low';
+        const badgeClass = riskLevel === 'High' ? 'danger' : riskLevel === 'Medium' ? 'warning' : 'success';
+        
+        var alertClass = badgeClass === 'danger' ? 'danger' : badgeClass === 'warning' ? 'warning' : 'success';
+        var iconClass = badgeClass === 'danger' ? 'exclamation-triangle' : badgeClass === 'warning' ? 'exclamation-circle' : 'check-circle';
+        
+        var htmlContent = '<div class="alert alert-' + alertClass + '" role="alert">' +
+            '<h6 class="alert-heading">' +
+            '<i class="bi bi-' + iconClass + '"></i> Analysis Complete</h6>' +
+            '<p class="mb-2">Similarity Score: <strong>' + data.similarity_score.toFixed(1) + '%</strong></p>' +
+            '<p class="mb-0">Risk Level: <span class="badge bg-' + badgeClass + '">' + riskLevel + '</span></p>' +
+            '</div>';
+            
+        if (data.flagged_sentences.length > 0) {
+            htmlContent += '<div class="mt-3"><h6>Flagged Sentences:</h6>';
+            for (var i = 0; i < data.flagged_sentences.length; i++) {
+                var item = data.flagged_sentences[i];
+                htmlContent += '<div class="card mb-2">' +
+                    '<div class="card-body py-2">' +
+                    '<p class="mb-1">"' + item.sentence + '"</p>' +
+                    '<small class="text-muted">' +
+                    '<i class="bi bi-link-45deg"></i> ' +
+                    '<a href="' + item.source_url + '" target="_blank" class="text-decoration-none">' +
+                    item.source_url + '</a></small></div></div>';
+            }
+            htmlContent += '</div>';
+        }
+        
+        htmlContent += '<div class="mt-3">' +
+            '<a href="/analyzer/report/' + data.report_id + '/" class="btn btn-outline-primary">' +
+            '<i class="bi bi-eye"></i> View Full Report</a></div>';
+            
+        resultsContent.innerHTML = htmlContent;
+        
+        resultsSection.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}
