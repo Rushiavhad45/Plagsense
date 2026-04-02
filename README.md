@@ -125,7 +125,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 👥 Contributors
 
-- [Your Name](https://github.com/yourusername)
+- [Rushikesh](https://github.com/Rushiavhad45)
 
 ## 🙏 Acknowledgements
 
